@@ -11,7 +11,6 @@ const checkJwt = (req: RequestExt, res: Response, next: NextFunction) => {
     if (!isUser) {
       return handleHttp(res, 401, "JWT_NOT_VALID", "Token no valido");
     }
-    console.log("user token", isUser);
     req.user = isUser;
     next();
   } catch (e) {

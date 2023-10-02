@@ -2,7 +2,13 @@ import { Request, Response } from "express";
 import { handleHttp } from "../utils/error.handle";
 import { AuthService } from "../services/auth.service";
 import { encrypt, verified } from "../utils/bcrypt.handle";
-import { generateToken } from "../utils/jwt-handle";
+import {
+  generateRefreshToken,
+  generateToken,
+  verifyRefreshToken,
+} from "../utils/jwt-handle";
+import { JwtPayload } from "jsonwebtoken";
+import { JWTdata } from "../models/jwt-data";
 
 const service = new AuthService();
 
@@ -47,8 +53,10 @@ const loginUser = async (req: Request, res: Response) => {
     }
 
     const token = generateToken(user.id);
+    const refresh_token = generateRefreshToken(user.id);
     const response = {
       token,
+      refresh_token,
       user,
     };
 
@@ -58,4 +66,56 @@ const loginUser = async (req: Request, res: Response) => {
   }
 };
 
-export { registerUser, loginUser };
+const refreshToken = async (req: Request, res: Response) => {
+  const refreshToken = req.body.refresh_token;
+
+  if (!refreshToken) {
+    handleHttp(
+      res,
+      400,
+      "ERROR_REFRESH_TOKEN",
+      "Necesita enviar el Refresh Token",
+    );
+  }
+
+  try {
+    const validRefreshToken = verifyRefreshToken(refreshToken) as JWTdata;
+    console.log("validRefreshToken", validRefreshToken);
+
+    if (!validRefreshToken) {
+      return handleHttp(
+        res,
+        401,
+        "JWT_REFRESH_NOT_VALID",
+        "Datos Vencidos, Inicia Sesión Nuevamente",
+      );
+    }
+
+    const user = await service.findUserId(validRefreshToken.id);
+
+    console.log("user", user);
+
+    if (!user) {
+      return handleHttp(
+        res,
+        401,
+        "JWT_REFRESH_NOT_VALID",
+        "Datos de Sesión Invalidos, Inicia Sesión Nuevamente",
+      );
+    }
+
+    const token = generateToken(user.id);
+    const refresh_token = generateRefreshToken(user.id);
+
+    const response = {
+      token,
+      refresh_token,
+    };
+
+    res.send({ success: true, data: response });
+  } catch (e) {
+    handleHttp(res, 500, "ERROR_REFRESH_TOKEN", e);
+  }
+};
+
+export { registerUser, loginUser, refreshToken };
