@@ -23,4 +23,11 @@ export class AuthService {
     });
     return user as unknown as Prisma.Prisma__UserClient<User>;
   }
+
+  async findUserId(id: string): Promise<Prisma.Prisma__UserClient<User>> {
+    const user = await prisma.user.findUnique({
+      where: { id: id },
+    });
+    return user as unknown as Prisma.Prisma__UserClient<User>;
+  }
 }
