@@ -1,9 +1,8 @@
-export interface User {
+export interface List {
   id: string;
-  email: string;
-  password: string;
+  id_user: string;
+  id_category: string;
   name: string;
-  image: string;
   description: string;
   createdAt?: string;
   updatedAt?: string;

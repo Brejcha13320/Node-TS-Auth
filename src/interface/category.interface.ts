@@ -1,9 +1,7 @@
-export interface User {
+export interface Category {
   id: string;
-  email: string;
-  password: string;
+  id_user: string;
   name: string;
-  image: string;
   description: string;
   createdAt?: string;
   updatedAt?: string;

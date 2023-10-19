@@ -3,15 +3,13 @@ import { handleHttp } from "../utils/error.handle";
 import { AuthService } from "../services/auth.service";
 import { encrypt, verified } from "../utils/bcrypt.handle";
 import {
-  generateRefreshToken,
   generateToken,
   generateTokenRecovery,
-  verifyRefreshToken,
   verifyToken,
 } from "../utils/jwt-handle";
-import { JwtPayload } from "jsonwebtoken";
 import { JWTdata } from "../models/jwt-data";
 import * as nodemailer from "nodemailer";
+import { RequestExt } from "../models/request-ext";
 
 const service = new AuthService();
 
@@ -61,10 +59,8 @@ const loginUser = async (req: Request, res: Response) => {
     }
 
     const token = generateToken(user.id);
-    const refresh_token = generateRefreshToken(user.id);
     const response = {
       token,
-      refresh_token,
     };
 
     res.send({ success: true, data: response });
@@ -162,52 +158,21 @@ const changePassword = async (req: Request, res: Response) => {
   }
 };
 
-const refreshToken = async (req: Request, res: Response) => {
-  const refreshToken = req.body.refresh_token;
-
-  if (!refreshToken) {
-    return handleHttp(
-      res,
-      400,
-      "ERROR_REFRESH_TOKEN",
-      "Necesita enviar el Refresh Token",
-    );
-  }
-
+const getUserProfile = async (req: RequestExt, res: Response) => {
   try {
-    const validRefreshToken = verifyRefreshToken(refreshToken) as JWTdata;
-
-    if (!validRefreshToken) {
-      return handleHttp(
+    const { id } = req.user as JWTdata;
+    const { password, ...response } = await service.findUserId(id);
+    if (!response) {
+      handleHttp(
         res,
-        401,
-        "JWT_REFRESH_NOT_VALID",
-        "Datos Vencidos, Inicia Sesión Nuevamente",
+        404,
+        "ERROR_FIND_USER_PROFILE",
+        `No existe el usuario con el id ${id}`,
       );
     }
-
-    const user = await service.findUserId(validRefreshToken.id);
-
-    if (!user) {
-      return handleHttp(
-        res,
-        401,
-        "JWT_REFRESH_NOT_VALID",
-        "Datos de Sesión Invalidos, Inicia Sesión Nuevamente",
-      );
-    }
-
-    const token = generateToken(user.id);
-    const refresh_token = generateRefreshToken(user.id);
-
-    const response = {
-      token,
-      refresh_token,
-    };
-
     res.send({ success: true, data: response });
   } catch (e) {
-    handleHttp(res, 500, "ERROR_REFRESH_TOKEN", e);
+    handleHttp(res, 500, "ERROR_GET_USER_PROFILE", e);
   }
 };
 
@@ -216,5 +181,5 @@ export {
   loginUser,
   recoveryPassword,
   changePassword,
-  refreshToken,
+  getUserProfile,
 };
