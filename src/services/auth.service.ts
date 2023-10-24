@@ -25,6 +25,13 @@ export class AuthService {
     return user as unknown as Prisma.Prisma__UserClient<User>;
   }
 
+  async findUserEmail(email: string): Promise<Prisma.Prisma__UserClient<User>> {
+    const user = await prisma.user.findUnique({
+      where: { email: email },
+    });
+    return user as unknown as Prisma.Prisma__UserClient<User>;
+  }
+
   async changePassword(
     id: string,
     data: any,

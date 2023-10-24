@@ -11,6 +11,17 @@ export class CategoryService {
     });
   }
 
+  async findSearch(id_user: string, term: string) {
+    return await prisma.category.findMany({
+      where: {
+        id_user: id_user,
+        name: {
+          contains: term,
+        },
+      },
+    });
+  }
+
   async findOne(id: string, id_user: string) {
     return await prisma.category.findUnique({
       where: {

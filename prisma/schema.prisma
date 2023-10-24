@@ -18,7 +18,7 @@ model User {
   image String @default("")
   description String @default("")
   category Category[]
-  list List[]
+  task Task[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -28,13 +28,13 @@ model Category {
   id_user String
   name String
   description String
-  list List[]
+  task Task[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user  User @relation(fields: [id_user], references: [id])
 }
 
-model List {
+model Task {
   id    String     @id @unique @default(uuid())
   id_user String
   id_category String
