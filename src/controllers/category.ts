@@ -24,6 +24,17 @@ const getCategory = async (req: RequestExt, res: Response) => {
   }
 };
 
+const getCategoriesSearch = async (req: RequestExt, res: Response) => {
+  try {
+    const { term } = req.params;
+    const id_user = req.user?.id as string;
+    const response = await service.findSearch(id_user, term);
+    res.send({ success: true, data: response });
+  } catch (e) {
+    handleHttp(res, 500, "ERROR_GET_CATEGORIES_SEARCH", e);
+  }
+};
+
 const getCategories = async (req: RequestExt, res: Response) => {
   try {
     const id_user = req.user?.id as string;
@@ -76,4 +87,5 @@ export {
   updateCategory,
   createCategory,
   deleteCategory,
+  getCategoriesSearch,
 };
